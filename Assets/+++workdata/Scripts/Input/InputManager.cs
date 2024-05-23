@@ -14,6 +14,9 @@ public class InputManager : MonoBehaviour
     public Vector2 MovementVec => movementVec;
     [SerializeField] Vector2 movementVec;
 
+    [field: SerializeField] public bool LeftClickPressed { get; private set; }
+    [field: SerializeField] public bool RightClickPressed { get; private set; }
+
     public InputAction moveAction
     {
         get;
@@ -44,7 +47,13 @@ public class InputManager : MonoBehaviour
         moveAction.canceled += ctx => Movement(ctx.ReadValue<Vector2>().normalized);
 
         leftclickAction = input.Player.LeftClick;
+        leftclickAction.performed += ctx => LeftClickPressed = true;
+        leftclickAction.canceled += ctx => LeftClickPressed = false;
+
         rightClickAction = input.Player.RightClick;
+        rightClickAction.performed += ctx => RightClickPressed = true;
+        rightClickAction.canceled += ctx => RightClickPressed = false;
+
     }
 
     void Start()

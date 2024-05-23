@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -6,13 +7,15 @@ using UnityEngine.InputSystem;
 public class PathController : MonoBehaviour
 {
     #region serialized fields
-
+    [SerializeField] List<Vector3> linePos;
+    [SerializeField] Transform sealPos;
+    [SerializeField] float smoothDivision;
     #endregion
 
     #region private fields
     LineRenderer lineRend;
-    [SerializeField] List<Vector3> linePos;
     #endregion
+
     void Awake()
     {
         InputManager.Instance.SubscribeTo(SetPoint, InputManager.Instance.leftclickAction, false);
@@ -21,22 +24,43 @@ public class PathController : MonoBehaviour
 
     }
 
+    void Start()
+    {
+        linePos.Add(sealPos.position);
+        SetPoints();
+    }
+
     void SetPoint(InputAction.CallbackContext ctx)
+    {
+        SetPoint();
+    }
+
+    void SetPoint()
     {
         linePos.Add(InputManager.Instance.MousePos);
         SetPoints();
     }
 
+    void Undo()
+    {
+        for (int i = 1; i < linePos.Count; i++)
+        {
+            linePos.RemoveAt(i);
+            i--;
+        }
+
+        SetPoints();
+    }
+
     void Undo(InputAction.CallbackContext ctx)
     {
-        if (linePos.Count > 0)
-            linePos.RemoveAt(linePos.Count - 1);
-        SetPoints();
+        Undo();
     }
 
     void SetPoints()
     {
         lineRend.positionCount = linePos.Count;
+        linePos[0] = sealPos.position;
         lineRend.SetPositions(linePos.ToArray());
     }
 }
