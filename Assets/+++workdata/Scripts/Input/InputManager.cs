@@ -56,7 +56,7 @@ public class InputManager : MonoBehaviour
 
     void Update()
     {
-        if (!cam) 
+        if (!cam)
             cam = Camera.main;
 
         if (cam)
@@ -65,10 +65,11 @@ public class InputManager : MonoBehaviour
 
     /// <summary> Takes a Method and an Inputaction to subscribe them</summary>
     /// <param name="method"></param>
-    public void SubscribeTo(Action<InputAction.CallbackContext> method, InputAction inputAction)
+    public void SubscribeTo(Action<InputAction.CallbackContext> method, InputAction inputAction, bool cancelledToo = false)
     {
         inputAction.performed += ctx => method(ctx);
-        inputAction.canceled += ctx => method(ctx);
+        if (cancelledToo)
+            inputAction.canceled += ctx => method(ctx);
     }
 
     #region OnEnable/Disable
