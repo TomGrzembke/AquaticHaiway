@@ -1,5 +1,5 @@
+using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -10,10 +10,16 @@ public class PathController : MonoBehaviour
     [SerializeField] List<Vector3> linePos;
     [SerializeField] Transform sealPos;
     [SerializeField] float smoothDivision;
+    [SerializeField] Transform endPos;
+    [SerializeField] Transform sealContainer;
+    [SerializeField] float pointTime = 2f;
+    [SerializeField] float stoppingDistance = 0.3f;
     #endregion
 
     #region private fields
+    float pointPathTime = 2f;
     LineRenderer lineRend;
+    bool canDraw = true;
     #endregion
 
     void Awake()
@@ -30,14 +36,27 @@ public class PathController : MonoBehaviour
         SetPoints();
     }
 
+    public void StartPath()
+    {
+        SetPoint(endPos.position);
+        StartCoroutine(Path());
+    }
+
     void SetPoint(InputAction.CallbackContext ctx)
     {
-        SetPoint();
+        if (canDraw)
+            SetPoint();
     }
 
     void SetPoint()
     {
         linePos.Add(InputManager.Instance.MousePos);
+        SetPoints();
+    }
+
+    void SetPoint(Vector2 goal)
+    {
+        linePos.Add(goal);
         SetPoints();
     }
 
@@ -62,5 +81,31 @@ public class PathController : MonoBehaviour
         lineRend.positionCount = linePos.Count;
         linePos[0] = sealPos.position;
         lineRend.SetPositions(linePos.ToArray());
+    }
+
+    public void SetCanDraw(bool con)
+    {
+        canDraw = con;
+    }
+
+    IEnumerator Path()
+    {
+        for (int i = 0; i < linePos.Count; i++)
+        {
+            while (Vector3.Distance(sealPos.position, linePos[i]) > stoppingDistance)
+            {
+                pointPathTime += Time.deltaTime;
+                sealContainer.position = Vector3.Lerp(sealContainer.position, linePos[i], pointPathTime / pointTime);
+                yield return null;
+
+            }
+        }
+
+    }
+
+    public void ResetGame()
+    {
+        GameStateManager.ReloadGameScene();
+
     }
 }
